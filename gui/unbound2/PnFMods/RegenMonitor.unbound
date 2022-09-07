@@ -1,0 +1,182 @@
+(def element MarkerHealthBarItem (_entityId:number, _isLarge:bool, _isSuppressed:bool=false) layout=true
+	(scope
+		(var customElementsVisibilityComponent:gfx = "$datahub.getSingleEntity(CC.customElementsVisibility)")
+		(var enabledElements:number = "customElementsVisibilityComponent ? customElementsVisibilityComponent.customElementsVisibility.enabledElements : null" (event "customElementsVisibilityComponent.customElementsVisibility.evChanged"))
+		(var isMultyTeamEnabled:bool = "(enabledElements & SC.Battle.CUSTOM_BATTLE_ELEMENTS.MULTYTEAMS) > 0")
+
+		(var markerEntity:gfx = "$datahub.getEntity(_entityId)")
+		(var teamId:number = "markerEntity.avatar ? markerEntity.avatar.teamId : 0" (event "markerEntity.avatar.evTeamIdChanged"))
+
+		(macro GET_MARKER_ENTITY_COMPONENT 'health')
+		(var healthValue:number = "healthComponent ? healthComponent.value : 0" (event "healthComponent.evValueChanged"))
+		(var healthMax:number = "healthComponent ? healthComponent.max : 0" (event "healthComponent.evMaxChanged"))
+		(var healthDelta:number = "healthComponent ? healthComponent.delta : 0" (event "healthComponent.evDeltaChanged"))
+
+		(var healthRatio:number = "healthMax ? healthValue / healthMax : -1")
+		(var textValue:str = "toString(formatSeparator(healthValue)) + ' / ' + toString(formatSeparator(healthMax))")
+
+		#modded
+		(macro GET_MARKER_ENTITY_COMPONENT 'dataComponent')
+		(var regenMaxValue:number = "dataComponentComponent ? dataComponentComponent.data.maxValue : 0" (event "dataComponentComponent.evDataChanged"))
+		(var regenRatio:number = "healthMax ? regenMaxValue / healthMax : -1")
+		#(var selfAvatarEntity:gfx =  "$datahub.getSingleEntity(CC.playerAvatar)") #isPlayer
+		#
+
+		(macro GET_MARKER_ENTITY_COMPONENT 'relation')
+		(var relationValue:number = "relationComponent ? relationComponent.value : 0" (event "relationComponent.evChanged"))
+		(var relationStr:str = "toLower(SC.Battle.PLAYER_RELATION.VALUE_TO_NAME[relationValue])")
+		(var isAlly:bool = "relationComponent && relationComponent.value == SC.Battle.PLAYER_RELATION.ALLY" (event "relationComponent.evChanged"))
+
+		(macro GET_MARKER_ENTITY_COMPONENT 'diplomacyRelation')
+		(var diplomacyRelationValue:number = "diplomacyRelationComponent ? diplomacyRelationComponent.value : 0" (event "diplomacyRelationComponent.evChanged"))
+		(var relationStrByDiplomacy:str = "DIPLOMACY_RELATION_TO_RELATION_STR[diplomacyRelationValue]")
+
+		(var sizes:array = "HEALTH_BAR_SIZE[_isLarge ? 1 : 0]")
+
+		
+		(event evBarTweenStart)
+		(event onBarTweenStart)
+		(event onBarTweenEnd)
+		(event onDamageTweenEnd)
+
+		(var isDirty:bool = false) 
+		(bind isDirty "true" (event "healthComponent.evValueChanged"))
+		(bind isDirty "false" (event "onBarTweenStart"))
+		
+		(var isDamageShows:bool = false) 
+		(bind isDamageShows "true" (event "onBarTweenStart"))
+		(bind isDamageShows "false" (event "onDamageTweenEnd"))
+
+		(var targetBarScale:number = 0) 
+		(bind targetBarScale "healthRatio" watch=false (event "onBarTweenStart"))
+
+		(var markerColorTransform:dict = 
+			"	diplomacyRelationComponent	? TWO_TEAMS_COLOR_TRANSFORMS[relationStrByDiplomacy] :
+				isAlly						? TWO_TEAMS_COLOR_TRANSFORMS['ally'] :
+				isMultyTeamEnabled			? MULTI_TEAMS_COLOR_TRANSFORMS[teamId]
+											: TWO_TEAMS_COLOR_TRANSFORMS[relationStr]
+		")
+	)
+
+	(dispatch evBarTweenStart args="{}" (event "onDamageTweenEnd") (bind enabled "isDirty")) 
+	(block
+		(class $WorldMarkerItemMargins)
+		(style
+			(bind width "sizes[0]")
+			(bind height "sizes[1]")
+			(align = "center|middle")
+		)
+
+		
+		(block
+			(class $FullsizeAbsolute)
+			(style
+				(backgroundImage = "'url:../battle_hud/markers/bar/bar_bg.png'")
+				(backgroundSize = "fill")
+				(scale9grid = "rect(1, 1, 44, 2)")
+			)
+		)
+
+		
+		(block
+			(bind visible "_isSuppressed")
+			(class $FullsizeAbsolute)
+			(block
+				(class $FullsizeAbsolute)
+				(style
+					(bind backgroundImage "'url:../battle_hud/markers/bar/bar_hp_suppressed.png'")
+					(backgroundSize = "fill")
+					(scale9grid = "rect(2, 1, 42, 2)")
+				)
+				(bind colorTransform "markerColorTransform")
+			)
+
+			(block
+				(class $FullsizeAbsolute)
+				(bind scaleX "healthRatio")
+				(style (backgroundColor = 0x01000000))
+				(isMask = true)
+			)
+		)
+
+		
+		(block
+			(bind visible "!(_isSuppressed)")
+			(class $FullsizeAbsolute)
+			(style (padding = "HEALTH_BAR_FILL_PADDING"))
+
+			
+			(block
+				(class $FullsizeAbsolute)
+				(scaleX = "healthRatio")
+				
+				(alpha = 1.17)
+				(style
+					(bind backgroundColor "0xFFFFFFFF")
+					(backgroundSize = "fill")
+				)
+
+				(controller $Animation
+					(bindcall play  duration = "DAMAGE_BAR_TWEEN_DURATION"
+									delay = "DAMAGE_BAR_TWEEN_DELAY"
+									action="killAll"
+									watch=false
+									easing="Easing.quad_in"
+									to = "{ scaleX: targetBarScale }"
+									(event "onBarTweenEnd")
+					)
+					(dispatch onDamageTweenEnd args="{}" on=evAnimEnded)
+				)
+			)
+
+			#modded
+			(block
+				(class $FullsizeAbsolute)
+				(bind scaleX "regenRatio")
+				(bind visible "dataComponentComponent")
+				
+				(style
+					(bind backgroundColor "0xFFFFFFFF")
+					(backgroundSize = "fill")
+				)
+				#Edit here to change color
+				(bind colorTransform "{ redMultiplier:0,greenMultiplier:0,blueMultiplier:0,alphaMultiplier:0.7,redOffset:238,greenOffset:238,blueOffset:238,alphaOffset:0 }")
+			)
+			#
+			
+			(block
+				(class $FullsizeAbsolute)
+				(scaleX = "healthRatio")
+
+				(style
+					(bind backgroundColor "0xFFFFFFFF")
+					(backgroundSize = "fill")
+				)
+
+				(bind colorTransform "markerColorTransform")
+
+				(controller $Animation
+					(bind enabled "!(isDamageShows)")
+					(bindcall play	duration = "HEALTH_BAR_TWEEN_DURATION"
+									action="killAll"
+									watch=false
+									to = "{ scaleX: healthRatio }"
+									(event "healthComponent.evValueChanged")
+									(event "evBarTweenStart")
+					)
+					(dispatch onBarTweenStart args="{}" on=evAnimStarted)
+					(dispatch onBarTweenEnd args="{}" on=evAnimEnded)
+				)
+			)
+		)
+
+		
+		(block
+			(bind visible "_isLarge")
+			(tf
+				(class $WorldMarkerTextItem)
+				(bind text "textValue")
+			)
+		)
+	)
+)
