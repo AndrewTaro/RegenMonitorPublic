@@ -40,7 +40,7 @@
 		(event onDamageTweenEnd)
 
 		(var isDirty:bool = false) 
-		(bind isDirty "true" (event "healthComponent.evValueChanged"))
+		(bind isDirty "true" (event "healthComponent.evValueChanged") (event "healthComponent.evMaxChanged"))
 		(bind isDirty "false" (event "onBarTweenStart"))
 		
 		(var isDamageShows:bool = false) 
@@ -140,7 +140,7 @@
 					(backgroundSize = "fill")
 				)
 				#Edit here to change color
-				(bind colorTransform "{ redMultiplier:0,greenMultiplier:0,blueMultiplier:0,alphaMultiplier:0.7,redOffset:238,greenOffset:238,blueOffset:238,alphaOffset:0 }")
+				(bind colorTransform "{ redMultiplier:0,greenMultiplier:0,blueMultiplier:0,alphaMultiplier:0.4,redOffset:238,greenOffset:238,blueOffset:238,alphaOffset:0 }")
 			)
 			#
 			
@@ -162,6 +162,7 @@
 									watch=false
 									to = "{ scaleX: healthRatio }"
 									(event "healthComponent.evValueChanged")
+									(event "healthComponent.evMaxChanged")
 									(event "evBarTweenStart")
 					)
 					(dispatch onBarTweenStart args="{}" on=evAnimStarted)
