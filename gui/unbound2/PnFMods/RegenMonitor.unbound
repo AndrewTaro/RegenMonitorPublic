@@ -1,4 +1,4 @@
-#(def constant RM_COLOR_PREF_NAME 'regenMonitorBarOpacity')
+(def constant TT_REGENMONITOR_INSTALLED true) #for modconfig
 (def constant RM_COLOR_DEFAULT {
 	ALPHA: 4,
 	RED: 9,
