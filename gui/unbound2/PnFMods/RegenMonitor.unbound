@@ -22,14 +22,13 @@
 	(var name="_colorName+'Scale'" type=number value="$scope[_colorName+'PrefNum'] / 10.0" (event "userPrefsComponent.evUserPrefsChanged"))
 )
 
-(def element MarkerHealthBarItem (_entityId:number, _isLarge:bool, _isSuppressed:bool=false) layout=true
+(def element MarkerHealthBarItem (_markerEntity:gfx, _isLarge:bool, _isSuppressed:bool=false) layout=true
 	(scope
 		(var customElementsVisibilityComponent:gfx = "$datahub.getSingleEntity(CC.customElementsVisibility)")
 		(var enabledElements:number = "customElementsVisibilityComponent ? customElementsVisibilityComponent.customElementsVisibility.enabledElements : null" (event "customElementsVisibilityComponent.customElementsVisibility.evChanged"))
 		(var isMultyTeamEnabled:bool = "(enabledElements & SC.Battle.CUSTOM_BATTLE_ELEMENTS.MULTYTEAMS) > 0")
 
-		(var markerEntity:gfx = "$datahub.getEntity(_entityId)")
-		(var teamId:number = "markerEntity.avatar ? markerEntity.avatar.teamId : 0" (event "markerEntity.avatar.evTeamIdChanged"))
+		(var teamId:number = "_markerEntity.avatar ? _markerEntity.avatar.teamId : 0" (event "_markerEntity.avatar.evTeamIdChanged"))
 
 		(macro GET_MARKER_ENTITY_COMPONENT 'health')
 		(var healthValue:number = "healthComponent ? healthComponent.value : 0" (event "healthComponent.evValueChanged"))
@@ -104,7 +103,7 @@
 			(style
 				(backgroundImage = "'url:../battle_hud/markers/bar/bar_bg.png'")
 				(backgroundSize = "fill")
-				(scale9grid = "rect(1, 1, 44, 2)")
+				(scale9grid = [1, 1, 44, 2])
 			)
 		)
 
@@ -117,7 +116,7 @@
 				(style
 					(bind backgroundImage "'url:../battle_hud/markers/bar/bar_hp_suppressed.png'")
 					(backgroundSize = "fill")
-					(scale9grid = "rect(2, 1, 42, 2)")
+					(scale9grid = [2, 1, 42, 2])
 				)
 				(bind colorTransform "markerColorTransform")
 			)
