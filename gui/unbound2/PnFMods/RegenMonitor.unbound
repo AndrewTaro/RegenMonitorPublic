@@ -18,7 +18,7 @@
 
 (def macro RM_GET_COLORSCALE_PREF (_colorName:expression)
 	(var name="_colorName+'PrefName'" type=str value="RM_COLOR_PREF_NAME[toUpper(_colorName)] + (isAlly ? RM_COLOR_PREF_POSTFIX.ALLY : RM_COLOR_PREF_POSTFIX.ENEMY)")
-	(var name="_colorName+'PrefNum'" type=number value="$scope[_colorName+'PrefName'] in userPrefsNum ? round(userPrefsNum[$scope[_colorName+'PrefName']]) : RM_COLOR_DEFAULT[toUpper(_colorName)]" (event "userPrefsComponent.evUserPrefsChanged"))
+	(var name="_colorName+'PrefNum'" type=number value="toString(userPrefsNum[$scope[_colorName+'PrefName']]) != null ? round(userPrefsNum[$scope[_colorName+'PrefName']]) : RM_COLOR_DEFAULT[toUpper(_colorName)]" (event "userPrefsComponent.evUserPrefsChanged"))
 	(var name="_colorName+'Scale'" type=number value="$scope[_colorName+'PrefNum'] / 10.0" (event "userPrefsComponent.evUserPrefsChanged"))
 )
 
@@ -46,7 +46,7 @@
 		#modded
 		#userPrefs
 		(var userPrefsComponent:gfx = "$datahub.getSingleComponent(CC.userPrefs)")
-		(var userPrefsNum:dict = "userPrefsComponent.userPrefs.chatBoxWidth" (event "userPrefsComponent.evUserPrefsChanged"))
+		(var userPrefsNum:gfx = "userPrefsComponent.userPrefs.chatBoxWidth" watch=false (event "userPrefsComponent.evUserPrefsChanged"))
 		(macro RM_GET_COLORSCALE_PREF "'alpha'") #alphaScale
 		(macro RM_GET_COLORSCALE_PREF "'red'") #redScale
 		(macro RM_GET_COLORSCALE_PREF "'green'") #greenScale
