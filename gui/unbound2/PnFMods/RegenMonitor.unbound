@@ -64,9 +64,9 @@
 
 		(var shipEntity:gfx = "_markerEntity.avatar ? _markerEntity.avatar.ship.ref.ship : null" (event "_markerEntity.avatar.evShipRefChanged"))
 		(var shipId:str = "shipEntity ? toString(shipEntity.id) : ''")
-		(var shipWeights:dict = "MOD_TOURNAMENT_SHIPWEIGHT_DATA") # binding to scope var in order to supress error logs
-		(var isShipWeightEnabled:bool = "shipWeights")
-		(var shipWeightData:dict = "isShipWeightEnabled && shipId in shipWeights ? shipWeights[shipId] : {}")
+		(var shipWeights:dict = "{}" watch=false)
+		(bind shipWeights "MOD_TOURNAMENT_SHIPWEIGHT_DATA" $enabled="MOD_TOURNAMENT_SHIPWEIGHT_DATA") # Error supression
+		(var shipWeightData:dict = "shipId in shipWeights ? shipWeights[shipId] : {}")
 		(var isFlagShip:bool = "'FLAGSHIP' in shipWeightData ? shipWeightData.FLAGSHIP : false")
 		(var flagShipColorKey:str = "isAlly ? 'ally' : 'enemy'")
 		#
