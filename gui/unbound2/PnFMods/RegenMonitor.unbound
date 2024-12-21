@@ -1,28 +1,9 @@
 (def constant TT_REGENMONITOR_INSTALLED true) #for modconfig
 
-(def constant RM_PREFS {
-	ENEMY: {
-		ALPHA:	{KEY: 'regenMonitorBarOpacityEnemy',	DEFAULT: 0.4},
-		RED:	{KEY: 'regenMonitorBarRedEnemy',		DEFAULT: 0.9},
-		GREEN:	{KEY: 'regenMonitorBarGreenEnemy',		DEFAULT: 0.9},
-		BLUE:	{KEY: 'regenMonitorBarBlueEnemy',		DEFAULT: 0.9},
-	},
-	ALLY: {
-		ALPHA:	{KEY: 'regenMonitorBarOpacityAlly',		DEFAULT: 0.4},
-		RED:	{KEY: 'regenMonitorBarRedAlly',			DEFAULT: 0.9},
-		GREEN:	{KEY: 'regenMonitorBarGreenAlly',		DEFAULT: 0.9},
-		BLUE:	{KEY: 'regenMonitorBarBlueAlly',		DEFAULT: 0.9},
-	}
-})
-
 (def constant RM_FLAGSHIP_COLOR_TRANSFORM {
 	'ally'	: {redOffset: -256,	greenOffset: -153,	blueOffset: -51},	# blue-ish
 	'enemy'	: {redOffset: -102,	greenOffset: -102,	blueOffset: -256},	# yellow-ish
 })
-
-(def macro RM_GET_COLORSCALE_PREF (_varName:expression, _pref:expression)
-	(var name="_varName" type=number value="userPrefsNum && isNumber(userPrefsNum[_pref.KEY]) ? userPrefsNum[_pref.KEY] / 10.0 : _pref.DEFAULT")
-)
 
 (def element MarkerHealthBarItem (_markerEntity:gfx, _isLarge:bool, _isSuppressed:bool=false) layout=true
 	(scope
@@ -47,15 +28,14 @@
 
 		#modded
 		#userPrefs
-		(var userPrefsComponent:gfx = "$datahub.getSingleComponent(CC.userPrefs)")
-		(var userPrefsNum:gfx = "userPrefsComponent.userPrefs.chatBoxWidth" watch=false (event "userPrefsComponent.evUserPrefsChanged"))
+		(macro TT_GET_USERPREF)
 
 		(var prefs:dict = "isAlly ? RM_PREFS.ALLY : RM_PREFS.ENEMY")
 
-		(macro RM_GET_COLORSCALE_PREF _varName="'alphaScale'"	_pref="prefs.ALPHA")
-		(macro RM_GET_COLORSCALE_PREF _varName="'redScale'"		_pref="prefs.RED")
-		(macro RM_GET_COLORSCALE_PREF _varName="'greenScale'"	_pref="prefs.GREEN")
-		(macro RM_GET_COLORSCALE_PREF _varName="'blueScale'"	_pref="prefs.BLUE")
+		(macro TT_GET_PREF_NUMBER _varName="'alphaScale'"	_pref="prefs.ALPHA")
+		(macro TT_GET_PREF_NUMBER _varName="'redScale'"		_pref="prefs.RED")
+		(macro TT_GET_PREF_NUMBER _varName="'greenScale'"	_pref="prefs.GREEN")
+		(macro TT_GET_PREF_NUMBER _varName="'blueScale'"	_pref="prefs.BLUE")
 
 		#dataComponent
 		(macro GET_MARKER_ENTITY_COMPONENT 'dataComponent')
